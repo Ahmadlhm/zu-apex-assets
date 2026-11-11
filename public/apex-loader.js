@@ -7,6 +7,20 @@
   const pageId = String(apex?.env?.APP_PAGE_ID ?? '')
   if (appId !== '158' || pageId !== '1') return
 
+  // Older dashboard builds put the SPA route in `?page=...`, which ORDS
+  // treats as an APEX request parameter and rejects without an SSP checksum.
+  // Migrate old links to a hash route, then reload the same APEX page cleanly.
+  const pageUrl = new URL(window.location.href)
+  if (pageUrl.searchParams.has('page')) {
+    const requestedPage = pageUrl.searchParams.get('page')
+    pageUrl.searchParams.delete('page')
+    if (!pageUrl.hash && ['home', 'gates', 'registration'].includes(requestedPage)) {
+      pageUrl.hash = requestedPage
+    }
+    window.location.replace(pageUrl.href)
+    return
+  }
+
   const base = new URL('.', currentScript.src)
   const assets = new URL('assets/', base)
   const cssFiles = ['main.css', 'main2.css', 'main3.css']
