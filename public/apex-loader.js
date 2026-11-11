@@ -12,15 +12,16 @@
   const cssFiles = ['main.css', 'main2.css', 'main3.css']
 
   const mount = () => {
-    if (document.getElementById('zu-apex-dashboard-root')) return
+    const root = document.getElementById('root') ?? document.createElement('div')
+    if (root.dataset.zuApexDashboardMounted === 'true') return
     const container = document.querySelector('.t-Body-contentInner')
       ?? document.querySelector('#t_Body_content')
       ?? document.body
 
-    const root = document.createElement('div')
-    root.id = 'zu-apex-dashboard-root'
+    root.id = 'root'
     root.setAttribute('aria-label', 'لوحات جامعة الزرقاء')
-    container.prepend(root)
+    if (!root.isConnected) container.prepend(root)
+    root.dataset.zuApexDashboardMounted = 'true'
 
     cssFiles.forEach((file) => {
       const link = document.createElement('link')
@@ -29,6 +30,22 @@
       link.dataset.zuApexDashboard = 'true'
       document.head.append(link)
     })
+
+    const layout = document.createElement('style')
+    layout.dataset.zuApexDashboard = 'true'
+    layout.textContent = `
+      html, body { min-width: 320px; overflow-x: hidden; }
+      #root { width: 100vw; min-height: 100vh; margin-inline: calc(50% - 50vw); }
+      #root > .app-shell { min-height: 100vh; }
+      #t_Body_content, .t-Body-mainContent, .t-Body-content, .t-Body-contentInner {
+        width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important;
+      }
+      .t-Region, .t-Region-bodyWrap, .t-Region-body {
+        margin: 0 !important; padding: 0 !important; border: 0 !important;
+        border-radius: 0 !important; box-shadow: none !important; background: transparent !important;
+      }
+    `
+    document.head.append(layout)
 
     const module = document.createElement('script')
     module.type = 'module'
